@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, LockKeyhole, ShieldCheck, Workflow } from "lucide-react";
+import { ArrowRight, CheckCircle2, LockKeyhole, Mail, ShieldCheck, Workflow } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -43,70 +43,97 @@ export default function LoginPage() {
 
   return (
     <main className="auth-page">
-      <nav className="nav">
+      <nav className="nav auth-nav">
         <Link className="brand" href="/">
           <span className="brand-mark">O</span>
           Obliq-io
         </Link>
         <Link className="button secondary" href="/register">
-          Register
+          Create account
         </Link>
       </nav>
-      <section className="auth-wrap">
-        <motion.div
-          className="band motion-safe"
+      <section className="auth-shell">
+        <motion.aside
+          className="auth-story motion-safe"
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.55, ease: "easeOut" }}
         >
           <span className="eyebrow">
-            <LockKeyhole size={17} /> Secure session
+            <LockKeyhole size={17} /> Secure CA workspace
           </span>
-          <h1>Continue your workflow review.</h1>
+          <h1>Pick up every client workflow where you left it.</h1>
           <p className="lead">
-            Passwords are hashed with scrypt and sessions are signed in HTTP-only
-            cookies for a practical prototype baseline.
+            Sign in to review applications, retrieve document context, manage users,
+            and route risky filing work to partner approval.
           </p>
-          <div className="auth-perks">
-            <span>
-              <ShieldCheck size={18} /> Protected dashboard
-            </span>
-            <span>
-              <Workflow size={18} /> Client workflow console
-            </span>
-            <span>
-              <CheckCircle2 size={18} /> RAG and agent tools ready
-            </span>
+          <div className="auth-preview">
+            <div className="preview-head">
+              <span className="status-dot" />
+              Live compliance queue
+            </div>
+            {["GST notice triage", "Audit evidence pack", "Client KYC follow-up"].map((item, index) => (
+              <motion.div
+                className="preview-row"
+                key={item}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.16 + index * 0.08 }}
+              >
+                <CheckCircle2 size={17} />
+                <span>{item}</span>
+                <i style={{ width: `${82 - index * 16}%` }} />
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
+        </motion.aside>
+
         <motion.form
-          className="auth-panel motion-safe"
+          className="auth-card motion-safe"
           onSubmit={submit}
           noValidate
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, delay: 0.08, ease: "easeOut" }}
         >
-          <h1>Login</h1>
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input id="email" name="email" type="email" aria-invalid={Boolean(errors.email)} />
+          <div className="auth-card-head">
+            <span>
+              <ShieldCheck size={18} /> Protected login
+            </span>
+            <h2>Welcome back</h2>
+            <p>Enter your workspace credentials to open the operations dashboard.</p>
+          </div>
+          <div className="field icon-field">
+            <label htmlFor="email">Work email</label>
+            <span>
+              <Mail size={18} />
+              <input id="email" name="email" type="email" placeholder="you@firm.com" aria-invalid={Boolean(errors.email)} />
+            </span>
             {errors.email ? <p className="field-error">{errors.email}</p> : null}
           </div>
-          <div className="field">
+          <div className="field icon-field">
             <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              aria-invalid={Boolean(errors.password)}
-            />
+            <span>
+              <LockKeyhole size={18} />
+              <input id="password" name="password" type="password" placeholder="Your password" aria-invalid={Boolean(errors.password)} />
+            </span>
             {errors.password ? <p className="field-error">{errors.password}</p> : null}
           </div>
           {errors.form ? <p className="alert error">{errors.form}</p> : null}
-          <button className="button primary" type="submit" disabled={loading}>
+          <button className="button primary auth-submit" type="submit" disabled={loading}>
             {loading ? "Checking..." : "Enter dashboard"} <ArrowRight size={18} />
           </button>
+          <p className="auth-switch">
+            New to Obliq? <Link href="/register">Create a workspace</Link>
+          </p>
+          <div className="auth-mini-grid">
+            <span>
+              <Workflow size={16} /> CRUD workflows
+            </span>
+            <span>
+              <ShieldCheck size={16} /> HTTP-only session
+            </span>
+          </div>
         </motion.form>
       </section>
     </main>
