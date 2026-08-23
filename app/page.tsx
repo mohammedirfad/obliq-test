@@ -10,6 +10,7 @@ import {
   Database,
   FileSearch,
   GitBranch,
+  Layers3,
   LockKeyhole,
   ShieldCheck,
   Sparkles,
@@ -53,6 +54,15 @@ const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0 }
 };
+
+const ticker = [
+  "GST notices",
+  "Audit evidence",
+  "Client KYC",
+  "ITR packs",
+  "TDS checks",
+  "Partner review"
+];
 
 export default function Home() {
   return (
@@ -127,6 +137,17 @@ export default function Home() {
               <strong>&lt;1s</strong>
               <span>local RAG query path</span>
             </div>
+          </div>
+          <div className="hero-ticker" aria-label="Supported workflows">
+            <motion.div
+              className="ticker-track"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+            >
+              {[...ticker, ...ticker].map((item, index) => (
+                <span key={`${item}-${index}`}>{item}</span>
+              ))}
+            </motion.div>
           </div>
         </motion.div>
 
@@ -232,23 +253,29 @@ export default function Home() {
             Gemini, Groq, or another embedding provider.
           </p>
         </div>
-        <div className="pipeline">
-          <motion.div className="step" whileHover={{ y: -7 }}>
-            <span>01</span>
-            Document intake with validation and workspace ownership.
-          </motion.div>
-          <motion.div className="step" whileHover={{ y: -7 }}>
-            <span>02</span>
-            Token-aware chunking with overlap for source continuity.
-          </motion.div>
-          <motion.div className="step" whileHover={{ y: -7 }}>
-            <span>03</span>
-            Embedding and vector search with cosine similarity.
-          </motion.div>
-          <motion.div className="step" whileHover={{ y: -7 }}>
-            <span>04</span>
-            Agent response with citations, risk flags, and next actions.
-          </motion.div>
+        <div className="pipeline" aria-label="RAG pipeline">
+          {[
+            ["01", "Intake", "Validate document ownership, title, and content size before indexing."],
+            ["02", "Chunk", "Normalize text and split with overlap so context survives retrieval."],
+            ["03", "Embed", "Generate local vectors now; swap to pgvector and provider embeddings later."],
+            ["04", "Answer", "Search by cosine score, cite source chunks, and route risky work to review."]
+          ].map(([number, title, text], index) => (
+            <motion.article
+              className="step"
+              key={number}
+              initial={{ opacity: 0, x: -24 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.45, delay: index * 0.08 }}
+              whileHover={{ y: -7 }}
+            >
+              <span>{number}</span>
+              <h3>
+                <Layers3 size={18} /> {title}
+              </h3>
+              <p>{text}</p>
+            </motion.article>
+          ))}
         </div>
       </section>
 

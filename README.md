@@ -52,3 +52,7 @@ The current demo works without LLM keys because embeddings and agent planning ha
 ## Production Path
 
 Use `db/schema.sql` in Supabase, replace the JSON store in `lib/store.ts`, and swap `lib/rag.ts` embeddings for a provider-backed embedding model. The app is designed so those changes are isolated.
+
+## Pipeline Notes
+
+See `docs/pipelines.md` for the GitHub Actions flow, deployment checks, and a step-by-step explanation of how RAG ingestion/querying works in this prototype.

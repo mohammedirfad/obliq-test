@@ -2,14 +2,18 @@
 
 import {
   Bot,
+  BriefcaseBusiness,
   CalendarPlus,
   CheckCircle2,
+  Crown,
   FileSearch,
   Mail,
   Pencil,
   Send,
+  ShieldCheck,
   Trash2,
   Upload,
+  UserRound,
   Users
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -89,6 +93,13 @@ function statusClass(status: Application["status"]) {
   if (status === "blocked") return "rose";
   if (status === "review") return "yellow";
   return "blue";
+}
+
+function roleIcon(role: string) {
+  if (role === "Partner") return Crown;
+  if (role === "Admin") return ShieldCheck;
+  if (role === "Client") return UserRound;
+  return BriefcaseBusiness;
 }
 
 export default function DashboardClient({ initialApplications }: Props) {
@@ -394,7 +405,12 @@ export default function DashboardClient({ initialApplications }: Props) {
           <div className="user-list compact">
             {team.map((user) => (
               <motion.article className="user-row" key={user.id} whileHover={{ x: 4 }}>
-                <span className="avatar">{user.name.slice(0, 1)}</span>
+                <span className="avatar">
+                  {(() => {
+                    const Icon = roleIcon(user.role);
+                    return <Icon size={18} />;
+                  })()}
+                </span>
                 <div>
                   <strong>{user.name}</strong>
                   <span>{user.email}</span>
@@ -407,7 +423,13 @@ export default function DashboardClient({ initialApplications }: Props) {
       </section>
 
       <section className="panel kanban-panel">
-        <h3>Application pipeline</h3>
+        <div className="panel-head">
+          <div>
+            <h3>Application pipeline</h3>
+            <p>Live CRUD board for client work, status, owners, priority, and due dates.</p>
+          </div>
+          <span className="tag green">{applications.length} workflows</span>
+        </div>
         <div className="kanban">
           {grouped.map((column) => (
             <div className="kanban-column" key={column.status}>
