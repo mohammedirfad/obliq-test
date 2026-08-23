@@ -7,6 +7,32 @@ export function hasDatabaseUrl() {
   return Boolean(process.env.DATABASE_URL);
 }
 
+export function databaseErrorMessage(error: unknown) {
+  const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
+  const message = error instanceof Error ? error.message : "";
+
+  if (!process.env.DATABASE_URL) {
+    return "DATABASE_URL is missing. Add your Neon connection string in Vercel Environment Variables, then redeploy.";
+  }
+  if (code === "42P01" || /relation .* does not exist/i.test(message)) {
+    return "Database schema is missing. Run the Neon schema from db/neon-schema.sql, or run npm run db:init locally with DATABASE_URL set.";
+  }
+  if (code === "28P01" || /password authentication failed/i.test(message)) {
+    return "Database credentials were rejected. Re-copy the pooled Neon DATABASE_URL into Vercel.";
+  }
+  if (code === "ENOTFOUND" || code === "EAI_AGAIN" || /getaddrinfo/i.test(message)) {
+    return "Database host could not be resolved. Check the Neon connection string host in Vercel.";
+  }
+  if (code === "ETIMEDOUT" || /timeout/i.test(message)) {
+    return "Database connection timed out. Check the Neon project status and use the pooled connection string.";
+  }
+  if (/channel_binding/i.test(message)) {
+    return "Database connection failed because of channel binding. In Vercel, try the Neon pooled URL without channel_binding=require.";
+  }
+
+  return "Server could not reach the database. Check Vercel logs for the database error code and verify DATABASE_URL.";
+}
+
 function getPool() {
   if (!process.env.DATABASE_URL) return null;
   pool ??= new Pool({
@@ -77,6 +103,42 @@ function eventFromRow(row: Record<string, unknown>): AuditEvent {
 }
 
 export const postgres = {
+  async healthCheck() {
+    const db = getPool();
+    if (!db) {
+      return {
+        ok: false,
+        message: databaseErrorMessage(new Error("DATABASE_URL is missing"))
+      };
+    }
+
+    try {
+      const result = await db.query(`
+        select
+          to_regclass('public.users') as users,
+          to_regclass('public.applications') as applications,
+          to_regclass('public.documents') as documents,
+          to_regclass('public.chunks') as chunks,
+          to_regclass('public.audit_events') as audit_events
+      `);
+      const row = result.rows[0] as Record<string, string | null>;
+      const missing = Object.entries(row)
+        .filter(([, value]) => value === null)
+        .map(([key]) => key);
+      return {
+        ok: missing.length === 0,
+        message: missing.length === 0 ? "Database connection and schema are ready." : `Missing tables: ${missing.join(", ")}`,
+        missing
+      };
+    } catch (error) {
+      console.error("Database health check failed", error);
+      return {
+        ok: false,
+        message: databaseErrorMessage(error)
+      };
+    }
+  },
+
   async createUser(user: User, seedApplications: Omit<Application, "userId">[]) {
     const db = getPool();
     if (!db) return null;

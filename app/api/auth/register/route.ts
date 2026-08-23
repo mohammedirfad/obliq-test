@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { createSession, hashPassword, publicUser } from "@/lib/auth";
+import { databaseErrorMessage } from "@/lib/postgres";
 import { createUser, findUserByEmail } from "@/lib/store";
 import type { User } from "@/lib/types";
 
 function authErrorMessage(error: unknown) {
   if (error instanceof Error && error.message.includes("DATABASE_URL")) return error.message;
-  return "Registration failed because the server could not reach the database.";
+  return databaseErrorMessage(error);
 }
 
 export async function POST(request: Request) {
