@@ -27,6 +27,10 @@ Open `http://localhost:3000`, create an account, then test the dashboard RAG and
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
+- `GET /api/users`
+- `POST /api/users`
+- `PATCH /api/users/:id`
+- `DELETE /api/users/:id`
 - `GET /api/applications`
 - `POST /api/applications`
 - `PATCH /api/applications/:id`

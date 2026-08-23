@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
-import type { Application } from "@/lib/types";
+import type { Application, PublicUser } from "@/lib/types";
 
 type Notice = {
   kind: "info" | "success" | "error";
@@ -27,6 +27,7 @@ type Notice = {
 
 type Props = {
   initialApplications: Application[];
+  initialUsers: PublicUser[];
   activeView: "applications" | "pipeline" | "ai" | "team";
 };
 
@@ -103,8 +104,16 @@ function roleIcon(role: string) {
   return BriefcaseBusiness;
 }
 
-export default function DashboardClient({ initialApplications, activeView }: Props) {
+export default function DashboardClient({ initialApplications, initialUsers, activeView }: Props) {
   const [applications, setApplications] = useState(initialApplications);
+  const [managedUsers, setManagedUsers] = useState(initialUsers);
+  const [userNotice, setUserNotice] = useState<Notice | null>(null);
+  const [userForm, setUserForm] = useState({
+    name: "",
+    email: "",
+    role: "member" as PublicUser["role"],
+    password: "Password1"
+  });
   const [form, setForm] = useState<ApplicationForm>({
     ...blankApplication,
     owner: team[1].name
@@ -282,6 +291,49 @@ export default function DashboardClient({ initialApplications, activeView }: Pro
     setMailMessage(templates[key].message);
   }
 
+  async function createManagedUser(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const response = await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userForm)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setUserNotice({ kind: "error", text: data.error ?? "User creation failed." });
+      return;
+    }
+    setManagedUsers((current) => [...current, data.user].sort((a, b) => a.name.localeCompare(b.name)));
+    setUserForm({ name: "", email: "", role: "member", password: "Password1" });
+    setUserNotice({ kind: "success", text: "User created and added to the firm workspace." });
+  }
+
+  async function updateManagedRole(id: string, role: PublicUser["role"]) {
+    const response = await fetch(`/api/users/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setUserNotice({ kind: "error", text: data.error ?? "User update failed." });
+      return;
+    }
+    setManagedUsers((current) => current.map((user) => (user.id === id ? data.user : user)));
+    setUserNotice({ kind: "success", text: "User role updated." });
+  }
+
+  async function removeManagedUser(id: string) {
+    const response = await fetch(`/api/users/${id}`, { method: "DELETE" });
+    const data = await response.json();
+    if (!response.ok) {
+      setUserNotice({ kind: "error", text: data.error ?? "User delete failed." });
+      return;
+    }
+    setManagedUsers((current) => current.filter((user) => user.id !== id));
+    setUserNotice({ kind: "success", text: "User removed from workspace." });
+  }
+
   return (
     <>
       {activeView === "applications" ? (
@@ -434,27 +486,101 @@ export default function DashboardClient({ initialApplications, activeView }: Pro
               <p>Review the operating roles used by workflow ownership, mail groups, and escalation paths.</p>
             </div>
           </div>
-          <motion.div className="panel motion-safe team-panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <h3>
-            <Users size={20} /> User management
-          </h3>
-          <div className="user-list compact">
-            {team.map((user) => (
-              <motion.article className="user-row" key={user.id} whileHover={{ x: 4 }}>
-                <span className="avatar">
-                  {(() => {
-                    const Icon = roleIcon(user.role);
-                    return <Icon size={18} />;
-                  })()}
-                </span>
-                <div>
-                  <strong>{user.name}</strong>
-                  <span>{user.email}</span>
+          <motion.div className="dashboard-grid team-management-grid motion-safe" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+            <section className="panel">
+              <h3>
+                <Users size={20} /> Add user
+              </h3>
+              <form onSubmit={createManagedUser} noValidate>
+                <div className="field">
+                  <label htmlFor="managedName">Name</label>
+                  <input
+                    id="managedName"
+                    value={userForm.name}
+                    onChange={(event) => setUserForm({ ...userForm, name: event.target.value })}
+                    placeholder="Client success owner"
+                  />
                 </div>
-                <span className="tag blue">{user.role}</span>
-              </motion.article>
-            ))}
-          </div>
+                <div className="field">
+                  <label htmlFor="managedEmail">Email</label>
+                  <input
+                    id="managedEmail"
+                    type="email"
+                    value={userForm.email}
+                    onChange={(event) => setUserForm({ ...userForm, email: event.target.value })}
+                    placeholder="owner@firm.com"
+                  />
+                </div>
+                <div className="form-split">
+                  <div className="field">
+                    <label htmlFor="managedRole">Role</label>
+                    <select
+                      id="managedRole"
+                      value={userForm.role}
+                      onChange={(event) => setUserForm({ ...userForm, role: event.target.value as PublicUser["role"] })}
+                    >
+                      <option value="member">Member</option>
+                      <option value="admin">Admin</option>
+                      <option value="founder">Founder</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="managedPassword">Temp password</label>
+                    <input
+                      id="managedPassword"
+                      value={userForm.password}
+                      onChange={(event) => setUserForm({ ...userForm, password: event.target.value })}
+                    />
+                  </div>
+                </div>
+                <button className="button primary" type="submit">
+                  <CheckCircle2 size={18} /> Create user
+                </button>
+              </form>
+              {userNotice ? <p className={`alert ${userNotice.kind}`}>{userNotice.text}</p> : null}
+            </section>
+
+            <section className="panel">
+              <div className="panel-head">
+                <div>
+                  <h3>
+                    <Users size={20} /> Workspace users
+                  </h3>
+                  <p>Manage firm members, admins, and reviewer access.</p>
+                </div>
+                <span className="tag blue">{managedUsers.length} users</span>
+              </div>
+              <div className="user-list compact">
+                {managedUsers.map((user) => {
+                  const Icon = roleIcon(user.role === "founder" ? "Partner" : user.role === "admin" ? "Admin" : "Preparer");
+                  return (
+                    <motion.article className="user-row managed-user-row" key={user.id} whileHover={{ x: 4 }}>
+                      <span className="avatar">
+                        <Icon size={18} />
+                      </span>
+                      <div>
+                        <strong>{user.name}</strong>
+                        <span>{user.email}</span>
+                      </div>
+                      <select
+                        aria-label={`Role for ${user.name}`}
+                        value={user.role}
+                        onChange={(event) => updateManagedRole(user.id, event.target.value as PublicUser["role"])}
+                      >
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                        <option value="founder">Founder</option>
+                      </select>
+                      <div className="icon-actions">
+                        <button type="button" aria-label={`Delete ${user.name}`} onClick={() => removeManagedUser(user.id)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </motion.article>
+                  );
+                })}
+              </div>
+            </section>
           </motion.div>
         </>
       ) : null}

@@ -12,7 +12,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { currentUser } from "@/lib/auth";
-import { getDashboard } from "@/lib/store";
+import { getDashboard, listUsersByFirm } from "@/lib/store";
 import DashboardClient from "./workspace";
 
 const views = ["overview", "applications", "pipeline", "ai", "team"] as const;
@@ -30,6 +30,7 @@ export default async function DashboardPage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const data = await getDashboard(user.id);
+  const users = await listUsersByFirm(user.firmName);
   const params = await searchParams;
   const view = readView(params?.view);
 
@@ -193,7 +194,11 @@ export default async function DashboardPage({
             </>
           ) : (
             <div className="view-shell">
-              <DashboardClient initialApplications={data.applications} activeView={view} />
+              <DashboardClient
+                initialApplications={data.applications}
+                initialUsers={users.map(({ passwordHash: _passwordHash, ...item }) => item)}
+                activeView={view}
+              />
             </div>
           )}
         </section>

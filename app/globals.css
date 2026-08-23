@@ -1387,6 +1387,24 @@ h3 {
   max-width: 860px;
 }
 
+.team-management-grid {
+  align-items: start;
+  grid-template-columns: minmax(300px, 0.7fr) minmax(0, 1.3fr);
+}
+
+.managed-user-row {
+  grid-template-columns: auto minmax(0, 1fr) minmax(120px, 150px) auto;
+}
+
+.managed-user-row select {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  min-height: 38px;
+  padding: 0 10px;
+}
+
 .form-split {
   display: grid;
   gap: 12px;
@@ -1554,6 +1572,7 @@ h3 {
   .auth-wrap,
   .dashboard-layout,
   .dashboard-grid,
+  .team-management-grid,
   .workspace-top,
   .tools-grid,
   .form-split,
@@ -1704,6 +1723,15 @@ h3 {
 
   .user-row {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .managed-user-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .managed-user-row select,
+  .managed-user-row .icon-actions {
+    grid-column: 1 / -1;
   }
 
   .user-row .tag {

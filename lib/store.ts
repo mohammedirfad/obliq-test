@@ -100,6 +100,43 @@ export async function findUserById(id: string) {
   return db.users.find((user) => user.id === id) ?? null;
 }
 
+export async function listUsersByFirm(firmName: string) {
+  const db = await readDb();
+  return db.users
+    .filter((user) => user.firmName.toLowerCase() === firmName.toLowerCase())
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function updateManagedUser(
+  currentUserId: string,
+  firmName: string,
+  id: string,
+  input: Partial<Pick<User, "name" | "role">>
+) {
+  const db = await readDb();
+  const user = db.users.find((item) => item.id === id && item.firmName.toLowerCase() === firmName.toLowerCase());
+  if (!user) return null;
+  if (input.name !== undefined) user.name = input.name;
+  if (input.role !== undefined) user.role = input.role;
+  db.auditEvents.push(event(currentUserId, "user.updated", { id, role: user.role }));
+  await writeDb(db);
+  return user;
+}
+
+export async function deleteManagedUser(currentUserId: string, firmName: string, id: string) {
+  if (currentUserId === id) return false;
+  const db = await readDb();
+  const index = db.users.findIndex((user) => user.id === id && user.firmName.toLowerCase() === firmName.toLowerCase());
+  if (index === -1) return false;
+  const [removed] = db.users.splice(index, 1);
+  db.applications = db.applications.filter((app) => app.userId !== id);
+  db.documents = db.documents.filter((doc) => doc.userId !== id);
+  db.chunks = db.chunks.filter((chunk) => chunk.userId !== id);
+  db.auditEvents.push(event(currentUserId, "user.deleted", { id, email: removed.email }));
+  await writeDb(db);
+  return true;
+}
+
 export async function getDashboard(userId: string) {
   const db = await readDb();
   return {
