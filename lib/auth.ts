@@ -18,11 +18,26 @@ export async function hashPassword(password: string) {
 }
 
 export async function verifyPassword(password: string, stored: string) {
+  if (!hasValidPasswordHash(stored)) return false;
   const [salt, key] = stored.split(":");
-  if (!salt || !key) return false;
-  const derived = (await scrypt(password, salt, 64)) as Buffer;
-  const expected = Buffer.from(key, "hex");
-  return expected.length === derived.length && timingSafeEqual(expected, derived);
+  try {
+    const derived = (await scrypt(password, salt, 64)) as Buffer;
+    const expected = Buffer.from(key, "hex");
+    return expected.length === derived.length && timingSafeEqual(expected, derived);
+  } catch {
+    return false;
+  }
+}
+
+export function hasValidPasswordHash(stored: string) {
+  const [salt, key, extra] = stored.split(":");
+  return (
+    !extra &&
+    Boolean(salt) &&
+    Boolean(key) &&
+    /^[a-f0-9]{32}$/i.test(salt) &&
+    /^[a-f0-9]{128}$/i.test(key)
+  );
 }
 
 function sign(payload: string) {

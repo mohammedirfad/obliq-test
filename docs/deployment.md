@@ -84,4 +84,21 @@ Deploy from Vercel or push to GitHub main.
 - Never commit `.env` or `.env.local`.
 - Rotate the Neon password if it was shared publicly.
 - Use the pooled Neon URL for Vercel serverless deployments.
+- After changing Vercel environment variables, redeploy the project. Existing deployments do not automatically receive new values.
 - The deterministic RAG embedding in `lib/rag.ts` is a prototype. For production quality retrieval, replace it with OpenAI/Gemini embeddings and pgvector search.
+
+## 7. Production Auth Checks
+
+Use these URLs after deployment:
+
+```text
+https://your-vercel-domain.vercel.app/api/health/db
+https://your-vercel-domain.vercel.app/api/health/auth?email=your-email@example.com
+```
+
+Expected results:
+
+- `health/db` should return `ok: true`.
+- `health/auth` with `userExists: false` means the user is not in Neon yet. Register again on the production site.
+- `health/auth` with `passwordHashFormat: invalid` means the stored password hash is corrupted or was inserted manually. Delete and recreate that user.
+- `health/auth` with `userExists: true` and `passwordHashFormat: valid` means the database user record is ready and login should work with the correct password.
