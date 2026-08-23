@@ -64,6 +64,10 @@ const emptyDb = (): Database => ({
 });
 
 export async function readDb(): Promise<Database> {
+  if (process.env.NODE_ENV === "production" && !process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is required in production. Add your Neon connection string in Vercel Environment Variables.");
+  }
+
   try {
     const raw = await readFile(dbPath, "utf8");
     return JSON.parse(raw) as Database;
