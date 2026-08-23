@@ -12,6 +12,7 @@ import {
   GitBranch,
   Layers3,
   LockKeyhole,
+  MessageSquareText,
   ShieldCheck,
   Sparkles,
   Workflow
@@ -102,10 +103,19 @@ export default function Home() {
           </span>
           <h1>Obliq-io</h1>
           <p className="lead">
-            A fast, secure prototype that turns client documents, compliance tasks,
-            and internal knowledge into an AI-assisted operating layer for chartered
-            accounting teams.
+            Type a client request once. Obliq turns it into documents to collect,
+            filings to track, team ownership, RAG-backed answers, and partner-ready
+            review steps.
           </p>
+          <motion.div
+            className="mandate-box"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.2 }}
+          >
+            <MessageSquareText size={18} />
+            <span>GST notice received. Reconcile ITC mismatch, assign preparer, and prepare partner review.</span>
+          </motion.div>
           <div className="hero-actions">
             <Link className="button primary" href="/register">
               Create workspace <ArrowRight size={18} />
@@ -130,16 +140,16 @@ export default function Home() {
           </div>
           <div className="metrics" aria-label="Prototype metrics">
             <div className="metric">
-              <strong>4</strong>
-              <span>core API groups</span>
+              <strong>1</strong>
+              <span>controlled work queue</span>
             </div>
             <div className="metric">
-              <strong>7</strong>
-              <span>schema domains</span>
+              <strong>5</strong>
+              <span>CA workflow stages</span>
             </div>
             <div className="metric">
-              <strong>&lt;1s</strong>
-              <span>local RAG query path</span>
+              <strong>AI</strong>
+              <span>retrieval and planning</span>
             </div>
           </div>
           <div className="hero-ticker" aria-label="Supported workflows">
@@ -242,6 +252,37 @@ export default function Home() {
               </motion.article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="band outcomes-band">
+        <div className="section-title">
+          <span className="eyebrow">Firm outcomes</span>
+          <h2>Designed around the work CA teams repeat every week.</h2>
+          <p>
+            Obliq is not a generic chatbot wrapper. It keeps the workflow,
+            document context, accountability, and review trail together.
+          </p>
+        </div>
+        <div className="outcomes-grid">
+          {[
+            ["Document chase", "Turn scattered WhatsApp and email requests into a tracked evidence queue."],
+            ["Notice response", "Extract deadlines, risk, amounts, and missing records before partner review."],
+            ["Filing packs", "Keep GST, TDS, ITR, ROC, and audit work moving through one pipeline."]
+          ].map(([title, text], index) => (
+            <motion.article
+              className="outcome-card"
+              key={title}
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.4, delay: index * 0.08 }}
+            >
+              <span>0{index + 1}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </motion.article>
+          ))}
         </div>
       </section>
 

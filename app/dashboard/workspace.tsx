@@ -27,6 +27,7 @@ type Notice = {
 
 type Props = {
   initialApplications: Application[];
+  activeView: "applications" | "pipeline" | "ai" | "team";
 };
 
 type ApplicationForm = {
@@ -102,7 +103,7 @@ function roleIcon(role: string) {
   return BriefcaseBusiness;
 }
 
-export default function DashboardClient({ initialApplications }: Props) {
+export default function DashboardClient({ initialApplications, activeView }: Props) {
   const [applications, setApplications] = useState(initialApplications);
   const [form, setForm] = useState<ApplicationForm>({
     ...blankApplication,
@@ -283,15 +284,17 @@ export default function DashboardClient({ initialApplications }: Props) {
 
   return (
     <>
-      <div className="section-label">
-        <span>01</span>
-        <div>
-          <strong>Applications and team</strong>
-          <p>Create client work, assign owners, and keep role context visible.</p>
-        </div>
-      </div>
-      <section id="applications" className="dashboard-grid workspace-top">
-        <motion.div className="panel motion-safe" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+      {activeView === "applications" ? (
+        <>
+          <div className="section-label">
+            <span>01</span>
+            <div>
+              <strong>Application management</strong>
+              <p>Create client work, assign owners, and update deadline-critical metadata.</p>
+            </div>
+          </div>
+          <section id="applications" className="dashboard-grid workspace-top">
+            <motion.div className="panel motion-safe" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
           <h3>
             <CalendarPlus size={20} /> {editingId ? "Edit application" : "Create application"}
           </h3>
@@ -403,9 +406,35 @@ export default function DashboardClient({ initialApplications }: Props) {
               </motion.p>
             ) : null}
           </AnimatePresence>
-        </motion.div>
+            </motion.div>
+            <motion.div className="panel motion-safe app-summary-panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+              <h3>Application list</h3>
+              <div className="deadline-list">
+                {applications.map((application) => (
+                  <article className="deadline-card" key={application.id}>
+                    <span className={`tag ${statusClass(application.status)}`}>{application.status}</span>
+                    <div>
+                      <strong>{application.clientName}</strong>
+                      <p>{application.service} / {application.priority} priority / due {application.dueDate}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </motion.div>
+          </section>
+        </>
+      ) : null}
 
-        <motion.div className="panel motion-safe" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+      {activeView === "team" ? (
+        <>
+          <div className="section-label">
+            <span>04</span>
+            <div>
+              <strong>Team and roles</strong>
+              <p>Review the operating roles used by workflow ownership, mail groups, and escalation paths.</p>
+            </div>
+          </div>
+          <motion.div className="panel motion-safe team-panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <h3>
             <Users size={20} /> User management
           </h3>
@@ -426,17 +455,20 @@ export default function DashboardClient({ initialApplications }: Props) {
               </motion.article>
             ))}
           </div>
-        </motion.div>
-      </section>
+          </motion.div>
+        </>
+      ) : null}
 
-      <div className="section-label">
-        <span>02</span>
-        <div>
-          <strong>Workflow pipeline</strong>
-          <p>Move work from intake to filing with clear priority and status signals.</p>
-        </div>
-      </div>
-      <section className="panel kanban-panel">
+      {activeView === "pipeline" ? (
+        <>
+          <div className="section-label">
+            <span>02</span>
+            <div>
+              <strong>Workflow pipeline</strong>
+              <p>Move work from intake to filing with clear priority and status signals.</p>
+            </div>
+          </div>
+          <section className="panel kanban-panel">
         <div className="panel-head">
           <div>
             <h3>Application pipeline</h3>
@@ -475,16 +507,20 @@ export default function DashboardClient({ initialApplications }: Props) {
             </div>
           ))}
         </div>
-      </section>
+          </section>
+        </>
+      ) : null}
 
-      <div className="section-label">
-        <span>03</span>
-        <div>
-          <strong>AI workbench</strong>
-          <p>Index documents, ask retrieval questions, plan agent workflows, and queue client communication.</p>
-        </div>
-      </div>
-      <div className="dashboard-grid tools-grid">
+      {activeView === "ai" ? (
+        <>
+          <div className="section-label">
+            <span>03</span>
+            <div>
+              <strong>AI workbench</strong>
+              <p>Index documents, ask retrieval questions, plan agent workflows, and queue client communication.</p>
+            </div>
+          </div>
+          <div className="dashboard-grid tools-grid">
         <motion.section id="rag" className="panel motion-safe" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
           <h3>
             <FileSearch size={20} /> RAG console
@@ -594,7 +630,9 @@ export default function DashboardClient({ initialApplications }: Props) {
             {mailNotice ? <p className={`alert ${mailNotice.kind}`}>{mailNotice.text}</p> : null}
           </form>
         </motion.section>
-      </div>
+          </div>
+        </>
+      ) : null}
     </>
   );
 }
