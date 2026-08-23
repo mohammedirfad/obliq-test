@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
   Bot,
@@ -65,8 +65,12 @@ const ticker = [
 ];
 
 export default function Home() {
+  const { scrollYProgress } = useScroll();
+  const progressScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
+
   return (
     <main className="shell">
+      <motion.div className="scroll-progress" style={{ scaleX: progressScale }} />
       <nav className="nav">
         <Link className="brand" href="/">
           <span className="brand-mark">O</span>

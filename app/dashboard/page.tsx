@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import {
   Bot,
   CalendarClock,
+  ChartNoAxesColumnIncreasing,
   Database,
   FileSearch,
   LayoutDashboard,
@@ -20,6 +21,20 @@ export default async function DashboardPage() {
 
   const active = data.applications.filter((app) => app.status !== "filed").length;
   const highRisk = data.applications.filter((app) => app.priority === "high").length;
+  const statusCounts = {
+    intake: data.applications.filter((app) => app.status === "intake").length,
+    processing: data.applications.filter((app) => app.status === "processing").length,
+    review: data.applications.filter((app) => app.status === "review").length,
+    filed: data.applications.filter((app) => app.status === "filed").length,
+    blocked: data.applications.filter((app) => app.status === "blocked").length
+  };
+  const maxStatusCount = Math.max(...Object.values(statusCounts), 1);
+  const completionRate = data.applications.length
+    ? Math.round((statusCounts.filed / data.applications.length) * 100)
+    : 0;
+  const nextApplications = [...data.applications]
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    .slice(0, 3);
 
   return (
     <main className="dashboard-page">
@@ -50,70 +65,110 @@ export default async function DashboardPage() {
           </nav>
         </aside>
         <section className="main">
-          <div className="topline">
+          <div className="dashboard-hero">
             <div>
               <span className="eyebrow">
                 <ShieldCheck size={17} /> {user.firmName}
               </span>
-              <h2>Welcome, {user.name}</h2>
-              <p className="hint">Command center for applications, indexed knowledge, and AI review flows.</p>
+              <h2>Operations command center</h2>
+              <p>Welcome, {user.name}. Track deadlines, automate document review, and keep every compliance workflow moving.</p>
             </div>
-            <span className="tag green">Secure session</span>
+            <div className="hero-score">
+              <strong>{completionRate}%</strong>
+              <span>completion rate</span>
+            </div>
           </div>
 
           <div id="overview" className="kpis">
             <div className="kpi">
+              <ChartNoAxesColumnIncreasing size={20} />
               <strong>{data.applications.length}</strong>
               <span>applications</span>
             </div>
             <div className="kpi">
+              <Sparkles size={20} />
               <strong>{active}</strong>
               <span>active workflows</span>
             </div>
             <div className="kpi">
+              <ShieldCheck size={20} />
               <strong>{highRisk}</strong>
               <span>high priority</span>
             </div>
             <div className="kpi">
+              <Database size={20} />
               <strong>{data.documents.length}</strong>
               <span>indexed docs</span>
             </div>
           </div>
 
           <div className="dashboard-grid overview-grid">
-            <section className="panel">
-              <h3>
-                <CalendarClock size={20} /> Client applications
-              </h3>
-              {data.applications.map((app) => (
-                <article className="work-card" key={app.id}>
-                  <div className="card-head">
-                    <strong>{app.clientName}</strong>
-                    <span className={app.priority === "high" ? "tag yellow" : "tag blue"}>
-                      {app.service}
-                    </span>
+            <section className="panel analytics-panel">
+              <div className="panel-head">
+                <div>
+                  <h3>
+                    <ChartNoAxesColumnIncreasing size={20} /> Pipeline health
+                  </h3>
+                  <p>Status distribution across the active CA workflow board.</p>
+                </div>
+                <span className="tag blue">Live</span>
+              </div>
+              <div className="status-chart">
+                {Object.entries(statusCounts).map(([status, count]) => (
+                  <div className="status-bar" key={status}>
+                    <span>{status}</span>
+                    <div>
+                      <i style={{ width: `${Math.max((count / maxStatusCount) * 100, count ? 12 : 2)}%` }} />
+                    </div>
+                    <strong>{count}</strong>
                   </div>
-                  <p>
-                    {app.status} / {app.priority} priority / due {app.dueDate}
-                  </p>
-                </article>
-              ))}
+                ))}
+              </div>
             </section>
 
-            <section className="panel">
-              <h3>
-                <Sparkles size={20} /> System events
-              </h3>
-              {data.auditEvents.length === 0 ? <p>No events yet.</p> : null}
-              {data.auditEvents.map((event) => (
-                <article className="work-card" key={event.id}>
-                  <div className="card-head">
-                    <strong>{event.action}</strong>
-                    <Database size={18} />
-                  </div>
-                  <p>{new Date(event.createdAt).toLocaleString()}</p>
-                </article>
-              ))}
+            <section className="panel next-panel">
+              <div className="panel-head">
+                <div>
+                  <h3>
+                    <CalendarClock size={20} /> Next deadlines
+                  </h3>
+                  <p>Closest client commitments, ordered by due date.</p>
+                </div>
+              </div>
+              <div className="deadline-list">
+                {nextApplications.map((app) => (
+                  <article className="deadline-card" key={app.id}>
+                    <span className={app.priority === "high" ? "tag yellow" : "tag blue"}>{app.service}</span>
+                    <div>
+                      <strong>{app.clientName}</strong>
+                      <p>{app.status} / due {app.dueDate}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="panel event-panel">
+              <div className="panel-head">
+                <div>
+                  <h3>
+                    <Sparkles size={20} /> Audit trail
+                  </h3>
+                  <p>Recent auth, CRUD, RAG, and agent events.</p>
+                </div>
+              </div>
+              <div className="event-timeline">
+                {data.auditEvents.length === 0 ? <p className="hint">No events yet.</p> : null}
+                {data.auditEvents.slice(0, 6).map((event) => (
+                  <article className="event-row" key={event.id}>
+                    <span />
+                    <div>
+                      <strong>{event.action}</strong>
+                      <p>{event.createdAt.replace("T", " ").slice(0, 16)} UTC</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </section>
           </div>
 

@@ -283,6 +283,13 @@ export default function DashboardClient({ initialApplications }: Props) {
 
   return (
     <>
+      <div className="section-label">
+        <span>01</span>
+        <div>
+          <strong>Applications and team</strong>
+          <p>Create client work, assign owners, and keep role context visible.</p>
+        </div>
+      </div>
       <section id="applications" className="dashboard-grid workspace-top">
         <motion.div className="panel motion-safe" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
           <h3>
@@ -422,6 +429,13 @@ export default function DashboardClient({ initialApplications }: Props) {
         </motion.div>
       </section>
 
+      <div className="section-label">
+        <span>02</span>
+        <div>
+          <strong>Workflow pipeline</strong>
+          <p>Move work from intake to filing with clear priority and status signals.</p>
+        </div>
+      </div>
       <section className="panel kanban-panel">
         <div className="panel-head">
           <div>
@@ -463,6 +477,13 @@ export default function DashboardClient({ initialApplications }: Props) {
         </div>
       </section>
 
+      <div className="section-label">
+        <span>03</span>
+        <div>
+          <strong>AI workbench</strong>
+          <p>Index documents, ask retrieval questions, plan agent workflows, and queue client communication.</p>
+        </div>
+      </div>
       <div className="dashboard-grid tools-grid">
         <motion.section id="rag" className="panel motion-safe" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
           <h3>
