@@ -18,7 +18,7 @@ Open `http://localhost:3000`, create an account, then test the dashboard RAG and
 - Dashboard seeded with client applications after signup, plus full application CRUD.
 - Local RAG pipeline: chunking, embeddings, cosine search, citations, workflow answer.
 - AI agent planning endpoint for GST notices, audit evidence, KYC, filings, and advisory work.
-- Supabase/Postgres schema with pgvector and row-level security in `db/schema.sql`.
+- Neon/Postgres production schema in `db/neon-schema.sql`; Supabase/pgvector option in `db/schema.sql`.
 - GitHub Actions CI and deploy script.
 
 ## API Surface
@@ -46,16 +46,17 @@ Copy `.env.example` to `.env.local` and set:
 
 ```bash
 SESSION_SECRET="a-long-random-secret"
+DATABASE_URL="postgresql://..."
 OPENAI_API_KEY=""
 GEMINI_API_KEY=""
 GROQ_API_KEY=""
 ```
 
-The current demo works without LLM keys because embeddings and agent planning have local deterministic fallbacks.
+Without `DATABASE_URL`, the app uses the local JSON store in `data/local.json`. With `DATABASE_URL`, it uses Neon/Postgres automatically. The current demo works without LLM keys because embeddings and agent planning have local deterministic fallbacks.
 
 ## Production Path
 
-Use `db/schema.sql` in Supabase, replace the JSON store in `lib/store.ts`, and swap `lib/rag.ts` embeddings for a provider-backed embedding model. The app is designed so those changes are isolated.
+For Neon, run `db/neon-schema.sql` in the Neon SQL Editor, then set `DATABASE_URL` in Vercel. For Supabase, use `db/schema.sql`. Swap `lib/rag.ts` embeddings for a provider-backed embedding model when moving beyond the deterministic prototype.
 
 ## Pipeline Notes
 
