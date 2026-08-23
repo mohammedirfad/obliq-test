@@ -13,8 +13,10 @@ import {
   Layers3,
   LockKeyhole,
   MessageSquareText,
+  Newspaper,
   ShieldCheck,
   Sparkles,
+  UsersRound,
   Workflow
 } from "lucide-react";
 
@@ -65,6 +67,33 @@ const ticker = [
   "Partner review"
 ];
 
+const plans = [
+  {
+    name: "Obliq Basic",
+    price: "Free",
+    text: "For solo CA operators testing workflow automation.",
+    items: ["Client applications", "Basic RAG console", "User profile", "CI-ready repo"]
+  },
+  {
+    name: "Obliq Premium",
+    price: "$87/mo",
+    text: "For CA firms managing recurring client deadlines.",
+    items: ["Everything in Basic", "User management", "Agent planner", "Mail campaigns"]
+  },
+  {
+    name: "Obliq Enterprise",
+    price: "Flexible",
+    text: "For teams that need migration, storage, and provider routing.",
+    items: ["Supabase schema", "pgvector path", "Gemini/Groq/OpenAI routing", "Advanced audit trail"]
+  }
+];
+
+const posts = [
+  "How CA firms can reduce pre-filing chaos",
+  "Designing a RAG pipeline for compliance documents",
+  "What to automate first in a small accounting firm"
+];
+
 export default function Home() {
   const { scrollYProgress } = useScroll();
   const progressScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
@@ -80,6 +109,7 @@ export default function Home() {
         <div className="nav-links">
           <a href="#platform">Platform</a>
           <a href="#pipeline">RAG</a>
+          <a href="#pricing">Pricing</a>
           <a href="#security">Security</a>
           <Link className="button secondary" href="/login">
             Login
@@ -223,6 +253,15 @@ export default function Home() {
         </motion.div>
       </section>
 
+      <section className="logo-strip" aria-label="Trusted by">
+        <p>Trusted by CA firms, startups, freelancers and studios</p>
+        <div>
+          {["Theo", "Amsterdam", "Savannah", "Milano", "Luminous"].map((logo) => (
+            <span key={logo}>{logo}</span>
+          ))}
+        </div>
+      </section>
+
       <section id="platform" className="band white">
         <div className="section-title">
           <span className="eyebrow">Product surface</span>
@@ -252,6 +291,39 @@ export default function Home() {
               </motion.article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="split-feature band">
+        <motion.div
+          className="device-stack"
+          initial={{ opacity: 0, x: -24 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="phone-preview">
+            <span>Mobile App</span>
+            <strong>Notice due in 7 days</strong>
+            <p>ITC mismatch pack assigned to Arjun.</p>
+          </div>
+          <div className="web-preview">
+            <span>Web App</span>
+            <div className="mini-bars">
+              <i style={{ width: "92%" }} />
+              <i style={{ width: "68%" }} />
+              <i style={{ width: "82%" }} />
+            </div>
+          </div>
+        </motion.div>
+        <div className="section-title">
+          <span className="eyebrow">Seamless across devices</span>
+          <h2>Work from anywhere, stay in sync.</h2>
+          <p>
+            Partners, preparers, admins, and clients can review status,
+            deadlines, evidence requests, and AI-generated next actions from
+            one responsive workspace.
+          </p>
         </div>
       </section>
 
@@ -336,6 +408,71 @@ export default function Home() {
             script for Vercel-style hosting.
           </p>
         </div>
+      </section>
+
+      <section id="pricing" className="band pricing-band">
+        <div className="section-title">
+          <span className="eyebrow">Pricing</span>
+          <h2>Simple plans for serious compliance work.</h2>
+          <p>Use the current prototype as the product base, then scale storage, teams, and AI providers as the firm grows.</p>
+        </div>
+        <div className="pricing-grid">
+          {plans.map((plan, index) => (
+            <motion.article
+              className={index === 1 ? "price-card featured" : "price-card"}
+              key={plan.name}
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.4, delay: index * 0.08 }}
+            >
+              <span>{plan.name}</span>
+              <strong>{plan.price}</strong>
+              <p>{plan.text}</p>
+              <ul>
+                {plan.items.map((item) => (
+                  <li key={item}>
+                    <CheckCircle2 size={16} /> {item}
+                  </li>
+                ))}
+              </ul>
+              <Link className={index === 1 ? "button primary" : "button secondary"} href="/register">
+                Get started
+              </Link>
+            </motion.article>
+          ))}
+        </div>
+      </section>
+
+      <section className="band blog-band">
+        <div className="section-title">
+          <span className="eyebrow">
+            <Newspaper size={17} /> Blog
+          </span>
+          <h2>Ideas to level up CA firm operations.</h2>
+        </div>
+        <div className="blog-grid">
+          {posts.map((post, index) => (
+            <motion.article className="blog-card" key={post} whileHover={{ y: -6 }}>
+              <span>{index === 0 ? "Must read" : "Insight"}</span>
+              <h3>{post}</h3>
+              <p>Practical notes for workflow design, document intelligence, and AI adoption.</p>
+            </motion.article>
+          ))}
+        </div>
+      </section>
+
+      <section className="community-band">
+        <div>
+          <span className="eyebrow">
+            <UsersRound size={17} /> Community
+          </span>
+          <h2>Stay in the loop</h2>
+          <p>Follow product updates, implementation notes, and CA workflow automation ideas.</p>
+        </div>
+        <Link className="button primary" href="/register">
+          Try Obliq free <ArrowRight size={18} />
+        </Link>
       </section>
     </main>
   );
