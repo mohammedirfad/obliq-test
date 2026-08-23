@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { createSession, publicUser, verifyPassword } from "@/lib/auth";
 import { findUserByEmail } from "@/lib/store";
 
+function authErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message.includes("DATABASE_URL")) return error.message;
+  return "Login failed because the server could not reach the database.";
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -19,10 +24,7 @@ export async function POST(request: Request) {
     console.error("Login failed", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Login failed because the server could not reach the database."
+        error: authErrorMessage(error)
       },
       { status: 500 }
     );

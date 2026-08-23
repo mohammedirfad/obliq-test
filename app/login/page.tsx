@@ -8,6 +8,14 @@ import { useRouter } from "next/navigation";
 
 type Errors = Partial<Record<"email" | "password" | "form", string>>;
 
+async function readResponse(response: Response) {
+  try {
+    return (await response.json()) as { error?: string };
+  } catch {
+    return { error: "Server returned an empty response. Check Vercel environment variables and database connection." };
+  }
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [errors, setErrors] = useState<Errors>({});
@@ -32,7 +40,7 @@ export default function LoginPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values)
     });
-    const data = await response.json();
+    const data = await readResponse(response);
     setLoading(false);
     if (!response.ok) {
       setErrors({ form: data.error ?? "Login failed. Please check your email and password." });

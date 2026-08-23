@@ -3,6 +3,11 @@ import { createSession, hashPassword, publicUser } from "@/lib/auth";
 import { createUser, findUserByEmail } from "@/lib/store";
 import type { User } from "@/lib/types";
 
+function authErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message.includes("DATABASE_URL")) return error.message;
+  return "Registration failed because the server could not reach the database.";
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -36,10 +41,7 @@ export async function POST(request: Request) {
     console.error("Registration failed", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Registration failed because the server could not reach the database."
+        error: authErrorMessage(error)
       },
       { status: 500 }
     );

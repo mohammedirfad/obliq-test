@@ -31,7 +31,7 @@ const plans: Plan[] = [
   {
     name: "Obliq Premium",
     badge: "Save 20%",
-    monthly: "$198/mo",
+    monthly: "$24/mo",
     annual: "$198/yr",
     text: "For CA firms managing recurring client deadlines.",
     cta: "Get started",
