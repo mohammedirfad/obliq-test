@@ -17,8 +17,12 @@ import {
   ShieldCheck,
   Sparkles,
   UsersRound,
-  Workflow
+  Workflow,
+  Linkedin,
+  Twitter
 } from "lucide-react";
+import PricingToggle from "./pricing-toggle";
+import TestimonialCarousel from "./testimonial-carousel";
 
 const features = [
   {
@@ -65,27 +69,6 @@ const ticker = [
   "ITR packs",
   "TDS checks",
   "Partner review"
-];
-
-const plans = [
-  {
-    name: "Obliq Basic",
-    price: "Free",
-    text: "For solo CA operators testing workflow automation.",
-    items: ["Client applications", "Basic RAG console", "User profile", "CI-ready repo"]
-  },
-  {
-    name: "Obliq Premium",
-    price: "$87/mo",
-    text: "For CA firms managing recurring client deadlines.",
-    items: ["Everything in Basic", "User management", "Agent planner", "Mail campaigns"]
-  },
-  {
-    name: "Obliq Enterprise",
-    price: "Flexible",
-    text: "For teams that need migration, storage, and provider routing.",
-    items: ["Supabase schema", "pgvector path", "Gemini/Groq/OpenAI routing", "Advanced audit trail"]
-  }
 ];
 
 const posts = [
@@ -410,38 +393,15 @@ export default function Home() {
         </div>
       </section>
 
+      <TestimonialCarousel />
+
       <section id="pricing" className="band pricing-band">
         <div className="section-title">
           <span className="eyebrow">Pricing</span>
           <h2>Simple plans for serious compliance work.</h2>
           <p>Use the current prototype as the product base, then scale storage, teams, and AI providers as the firm grows.</p>
         </div>
-        <div className="pricing-grid">
-          {plans.map((plan, index) => (
-            <motion.article
-              className={index === 1 ? "price-card featured" : "price-card"}
-              key={plan.name}
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.4, delay: index * 0.08 }}
-            >
-              <span>{plan.name}</span>
-              <strong>{plan.price}</strong>
-              <p>{plan.text}</p>
-              <ul>
-                {plan.items.map((item) => (
-                  <li key={item}>
-                    <CheckCircle2 size={16} /> {item}
-                  </li>
-                ))}
-              </ul>
-              <Link className={index === 1 ? "button primary" : "button secondary"} href="/register">
-                Get started
-              </Link>
-            </motion.article>
-          ))}
-        </div>
+        <PricingToggle />
       </section>
 
       <section className="band blog-band">
@@ -469,11 +429,35 @@ export default function Home() {
           </span>
           <h2>Stay in the loop</h2>
           <p>Follow product updates, implementation notes, and CA workflow automation ideas.</p>
+          <div className="social-actions">
+            <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">
+              <Linkedin size={17} /> LinkedIn
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noreferrer">
+              <Twitter size={17} /> Twitter
+            </a>
+          </div>
         </div>
         <Link className="button primary" href="/register">
           Try Obliq free <ArrowRight size={18} />
         </Link>
       </section>
+
+      <footer className="site-footer">
+        <div>
+          <Link className="brand" href="/">
+            <span className="brand-mark">O</span>
+            Obliq-io
+          </Link>
+          <p>AI workflow automation for modern CA firms.</p>
+        </div>
+        <nav>
+          <a href="#platform">Features</a>
+          <a href="#pipeline">RAG</a>
+          <a href="#pricing">Pricing</a>
+          <Link href="/login">Login</Link>
+        </nav>
+      </footer>
     </main>
   );
 }
