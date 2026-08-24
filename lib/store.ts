@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Application, AuditEvent, ChunkRecord, Database, DocumentRecord, User } from "./types";
-import { postgres } from "./postgres";
+import { hasDatabaseUrl, postgres } from "./postgres";
 
 const dataDir = path.join(process.cwd(), "data");
 const dbPath = path.join(dataDir, "local.json");
@@ -87,6 +87,7 @@ export async function writeDb(db: Database) {
 export async function createUser(user: User) {
   const pgUser = await postgres.createUser(user, seedApplications);
   if (pgUser) return pgUser;
+  if (hasDatabaseUrl()) return null;
 
   const db = await readDb();
   db.users.push(user);
@@ -101,6 +102,7 @@ export async function createUser(user: User) {
 export async function findUserByEmail(email: string) {
   const pgUser = await postgres.findUserByEmail(email);
   if (pgUser) return pgUser;
+  if (hasDatabaseUrl()) return null;
 
   const db = await readDb();
   return db.users.find((user) => user.email.toLowerCase() === email.toLowerCase()) ?? null;
@@ -109,6 +111,7 @@ export async function findUserByEmail(email: string) {
 export async function findUserById(id: string) {
   const pgUser = await postgres.findUserById(id);
   if (pgUser) return pgUser;
+  if (hasDatabaseUrl()) return null;
 
   const db = await readDb();
   return db.users.find((user) => user.id === id) ?? null;
@@ -117,6 +120,7 @@ export async function findUserById(id: string) {
 export async function listUsersByFirm(firmName: string) {
   const pgUsers = await postgres.listUsersByFirm(firmName);
   if (pgUsers) return pgUsers;
+  if (hasDatabaseUrl()) return [];
 
   const db = await readDb();
   return db.users
@@ -132,6 +136,7 @@ export async function updateManagedUser(
 ) {
   const pgUser = await postgres.updateManagedUser(currentUserId, firmName, id, input);
   if (pgUser) return pgUser;
+  if (hasDatabaseUrl()) return null;
 
   const db = await readDb();
   const user = db.users.find((item) => item.id === id && item.firmName.toLowerCase() === firmName.toLowerCase());
@@ -146,6 +151,7 @@ export async function updateManagedUser(
 export async function deleteManagedUser(currentUserId: string, firmName: string, id: string) {
   const pgDeleted = await postgres.deleteManagedUser(currentUserId, firmName, id);
   if (pgDeleted !== null) return pgDeleted;
+  if (hasDatabaseUrl()) return false;
 
   if (currentUserId === id) return false;
   const db = await readDb();
@@ -163,6 +169,7 @@ export async function deleteManagedUser(currentUserId: string, firmName: string,
 export async function getDashboard(userId: string) {
   const pgDashboard = await postgres.getDashboard(userId);
   if (pgDashboard) return pgDashboard;
+  if (hasDatabaseUrl()) return { applications: [], documents: [], auditEvents: [] };
 
   const db = await readDb();
   return {
@@ -175,6 +182,7 @@ export async function getDashboard(userId: string) {
 export async function listApplications(userId: string) {
   const pgApplications = await postgres.listApplications(userId);
   if (pgApplications) return pgApplications;
+  if (hasDatabaseUrl()) return [];
 
   const db = await readDb();
   return db.applications
@@ -194,6 +202,7 @@ export async function createApplication(userId: string, input: ApplicationInput)
 
   const pgApplication = await postgres.createApplication(userId, application);
   if (pgApplication) return pgApplication;
+  if (hasDatabaseUrl()) return null;
 
   const db = await readDb();
   db.applications.push(application);
@@ -208,6 +217,7 @@ export async function createApplication(userId: string, input: ApplicationInput)
 export async function updateApplication(userId: string, id: string, input: Partial<ApplicationInput>) {
   const pgApplication = await postgres.updateApplication(userId, id, input);
   if (pgApplication !== null) return pgApplication || null;
+  if (hasDatabaseUrl()) return null;
 
   const db = await readDb();
   const application = db.applications.find((app) => app.id === id && app.userId === userId);
@@ -226,6 +236,7 @@ export async function updateApplication(userId: string, id: string, input: Parti
 export async function deleteApplication(userId: string, id: string) {
   const pgDeleted = await postgres.deleteApplication(userId, id);
   if (pgDeleted !== null) return pgDeleted;
+  if (hasDatabaseUrl()) return false;
 
   const db = await readDb();
   const index = db.applications.findIndex((app) => app.id === id && app.userId === userId);
@@ -242,6 +253,7 @@ export async function deleteApplication(userId: string, id: string) {
 export async function addDocument(document: DocumentRecord, chunks: ChunkRecord[]) {
   const pgAdded = await postgres.addDocument(document, chunks);
   if (pgAdded) return;
+  if (hasDatabaseUrl()) return;
 
   const db = await readDb();
   db.documents.push(document);
@@ -256,6 +268,7 @@ export async function addDocument(document: DocumentRecord, chunks: ChunkRecord[
 export async function getChunks(userId: string) {
   const pgChunks = await postgres.getChunks(userId);
   if (pgChunks) return pgChunks;
+  if (hasDatabaseUrl()) return [];
 
   const db = await readDb();
   return db.chunks.filter((chunk) => chunk.userId === userId);
@@ -264,6 +277,7 @@ export async function getChunks(userId: string) {
 export async function addAuditEvent(auditEvent: AuditEvent) {
   const pgAdded = await postgres.addAuditEvent(auditEvent);
   if (pgAdded) return;
+  if (hasDatabaseUrl()) return;
 
   const db = await readDb();
   db.auditEvents.push(auditEvent);
